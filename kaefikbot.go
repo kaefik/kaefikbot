@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/Syfaro/telegram-bot-api"
 )
@@ -29,11 +30,17 @@ func readfiletxt(namef string) string {
 	return string(bs)
 }
 
+//получение токена из конфиг файла
+func GetToken(namef string) string {
+	fstr := readfiletxt(namef)
+	res := (strings.Split(fstr, ";"))[0]
+	return res
+}
 func main() {
 	var numtoken string
+	fmt.Println("Start kaefik bot...")
 
-	fstr := readfiletxt("cfg.token")
-	fmt.Println(fstr)
+	numtoken = GetToken("cfg.token")
 
 	bot, err := tgbotapi.NewBotAPI(numtoken)
 	if err != nil {
@@ -57,4 +64,5 @@ func main() {
 
 		bot.Send(msg)
 	}
+	fmt.Println("Stop kaefik bot...")
 }
