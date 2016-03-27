@@ -6,6 +6,8 @@ import (
 	"os"
 	"strings"
 
+	"go-board-money/parsebank"
+
 	"github.com/Syfaro/telegram-bot-api"
 )
 
@@ -43,9 +45,32 @@ var (
 	msg      tgbotapi.MessageConfig
 )
 
+func GetKursValuta() string {
+	resstr := ""
+	_, res := parsebank.RunGoBoardValutaHtml()
+	//	pick.Savestrtofile(todir+"board-money.html", str)
+
+	usdkurspokupka := res[0]
+	usdkursprodaja := res[1]
+	eurkurspokupka := res[2]
+	eurkursprodaja := res[3]
+	//	fmt.Println(res)
+
+	resstr += " Лучшая покупка USD: " + usdkurspokupka.Namebank + " - " + parsebank.FloatToString(usdkurspokupka.Pokupka) + " \n Лучшая продажа USD: " + usdkursprodaja.Namebank + " - " + parsebank.FloatToString(usdkursprodaja.Prodaja) + "\n Лучшая покупка EUR: " + eurkurspokupka.Namebank + " - " + parsebank.FloatToString(eurkurspokupka.Pokupka) + "\n Лучшая продажа EUR: " + eurkursprodaja.Namebank + " - " + parsebank.FloatToString(eurkursprodaja.Prodaja)
+	//
+
+	//	usdkursprodaja
+	//	eurkurspokupka
+	//	eurkursprodaja
+
+	return resstr
+}
+
 func main() {
 
 	fmt.Println("Start kaefik bot...")
+
+	//	linkbanks := parsebank.Initlinksbank() // ссылки на банки
 
 	numtoken = GetToken("cfg.token")
 
@@ -69,8 +94,8 @@ func main() {
 		switch update.Message.Text {
 		case "/start":
 			reply = fmt.Sprintf(`Привет @%s! Я тут слежу за порядком. Веди себя хорошо.`, update.Message.From.UserName)
-		case "/kurs":
-			reply = fmt.Sprintf(`Функционал вывода курсов валют Казани пока в разработке.`)
+		case "kurs":
+			reply = fmt.Sprintf(GetKursValuta())
 		default:
 			reply = update.Message.Text
 		}
