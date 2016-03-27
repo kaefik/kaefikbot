@@ -91,7 +91,8 @@ func main() {
 	for update := range updates {
 		log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
 		log.Printf("update.Message.Text = %s", update.Message.Text)
-		switch update.Message.Text {
+		strcmd := strings.ToLower(strings.TrimSpace(update.Message.Text))
+		switch strcmd {
 		case "/start":
 			reply = fmt.Sprintf(`Привет @%s! Я тут слежу за порядком. Веди себя хорошо.`, update.Message.From.UserName)
 		case "kurs":
