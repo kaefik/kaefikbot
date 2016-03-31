@@ -97,6 +97,8 @@ func main() {
 			reply = fmt.Sprintf(`Привет @%s! Я тут слежу за порядком. Веди себя хорошо.`, update.Message.From.UserName)
 		case "kurs":
 			reply = fmt.Sprintf(GetKursValuta())
+		case "курс":
+			reply = fmt.Sprintf(GetKursValuta())
 		default:
 			reply = update.Message.Text
 		}
