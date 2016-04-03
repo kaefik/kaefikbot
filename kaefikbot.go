@@ -4,11 +4,22 @@ import (
 	"fmt"
 	"log"
 	"os"
+	//	"strconv"
 	"strings"
 
 	"go-board-money/parsebank"
+	"go-board-money/pick"
 
 	"github.com/Syfaro/telegram-bot-api"
+)
+
+var (
+	numtoken  string
+	reply     string
+	replyfile string
+	msg       tgbotapi.MessageConfig
+
+	testfilename = "board-money.html" // для теста функции GetFile
 )
 
 //// чтение файла с именем namefи возвращение содержимое файла, иначе текст ошибки
@@ -39,31 +50,27 @@ func GetToken(namef string) string {
 	return res
 }
 
-var (
-	numtoken string
-	reply    string
-	msg      tgbotapi.MessageConfig
-)
-
-func GetKursValuta() string {
+// возвращает текст сообщения лучших предложений валют и возвращает путь и имя файла доски валют
+func GetKursValuta(todir string) (string, string) {
 	resstr := ""
-	_, res := parsebank.RunGoBoardValutaHtml()
-	//	pick.Savestrtofile(todir+"board-money.html", str)
+	//	if todir != "" {
+	//		if _, err := os.Stat(todir); os.IsNotExist(err) {
+	//			os.Mkdir(todir, 0666)
+	//		}
+	//	}
+	//	resfile := todir + string(os.PathSeparator) + "board-money.html"
+	resfile := todir + "board-money.html"
+	str, res := parsebank.RunGoBoardValutaHtml()
+	pick.Savestrtofile(resfile, str) // не сохраняет в папке
 
 	usdkurspokupka := res[0]
 	usdkursprodaja := res[1]
 	eurkurspokupka := res[2]
 	eurkursprodaja := res[3]
-	//	fmt.Println(res)
 
 	resstr += " Лучшая покупка USD: " + usdkurspokupka.Namebank + " - " + parsebank.FloatToString(usdkurspokupka.Pokupka) + " \n Лучшая продажа USD: " + usdkursprodaja.Namebank + " - " + parsebank.FloatToString(usdkursprodaja.Prodaja) + "\n Лучшая покупка EUR: " + eurkurspokupka.Namebank + " - " + parsebank.FloatToString(eurkurspokupka.Pokupka) + "\n Лучшая продажа EUR: " + eurkursprodaja.Namebank + " - " + parsebank.FloatToString(eurkursprodaja.Prodaja)
-	//
 
-	//	usdkursprodaja
-	//	eurkurspokupka
-	//	eurkursprodaja
-
-	return resstr
+	return resstr, resfile
 }
 
 func main() {
@@ -88,6 +95,13 @@ func main() {
 
 	updates, err := bot.GetUpdatesChan(u)
 
+	//	var ff bool
+	//	ff = true
+	//	ExistingPhotoFileID := "AgADAgADw6cxG4zHKAkr42N7RwEN3IFShCoABHQwXEtVks4EH2wBAAEC"
+
+	var msgi tgbotapi.PhotoConfig
+	var msgf tgbotapi.DocumentConfig
+
 	for update := range updates {
 		log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
 		log.Printf("update.Message.Text = %s", update.Message.Text)
@@ -95,18 +109,40 @@ func main() {
 		switch strcmd {
 		case "/start":
 			reply = fmt.Sprintf(`Привет @%s! Я тут слежу за порядком. Веди себя хорошо.`, update.Message.From.UserName)
+			msg = tgbotapi.NewMessage(update.Message.Chat.ID, reply)
+			msg.ReplyToMessageID = update.Message.MessageID
+			bot.Send(msg)
 		case "kurs":
-			reply = fmt.Sprintf(GetKursValuta())
+			reply, replyfile = GetKursValuta(update.Message.From.UserName + "-")
+			reply = fmt.Sprintf(reply)
+			msg = tgbotapi.NewMessage(update.Message.Chat.ID, reply)
+			msg.ReplyToMessageID = update.Message.MessageID
+			bot.Send(msg)
+			msgf = tgbotapi.NewDocumentUpload(update.Message.Chat.ID, replyfile)
+			bot.Send(msgf)
 		case "курс":
-			reply = fmt.Sprintf(GetKursValuta())
+			reply, replyfile = GetKursValuta(update.Message.From.UserName + "-")
+			reply = fmt.Sprintf(reply)
+			msg = tgbotapi.NewMessage(update.Message.Chat.ID, reply)
+			msg.ReplyToMessageID = update.Message.MessageID
+			bot.Send(msg)
+			msgf = tgbotapi.NewDocumentUpload(update.Message.Chat.ID, replyfile)
+			bot.Send(msgf)
+		case "file":
+			msgf = tgbotapi.NewDocumentUpload(update.Message.Chat.ID, testfilename)
+			bot.Send(msgf)
+		case "img": // возвращает картинку в текущий чат
+			//			ff = false
+			msgi = tgbotapi.NewPhotoUpload(update.Message.Chat.ID, "image.jpg")
+			msgi.Caption = "TestImg"
+			bot.Send(msgi)
 		default:
 			reply = update.Message.Text
+			msg = tgbotapi.NewMessage(update.Message.Chat.ID, reply)
+			msg.ReplyToMessageID = update.Message.MessageID
+			bot.Send(msg)
 		}
 
-		msg = tgbotapi.NewMessage(update.Message.Chat.ID, reply)
-		msg.ReplyToMessageID = update.Message.MessageID
-
-		bot.Send(msg)
 	}
 	fmt.Println("Stop kaefik bot...")
 }
