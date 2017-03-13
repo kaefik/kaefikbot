@@ -4,11 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
-	//	"strconv"
 	"strings"
-
-	"go-board-money/parsebank"
-	"go-board-money/pick"
 
 	"github.com/Syfaro/telegram-bot-api"
 )
@@ -48,29 +44,6 @@ func GetToken(namef string) string {
 	fstr := readfiletxt(namef)
 	res := (strings.Split(fstr, ";"))[0]
 	return res
-}
-
-// возвращает текст сообщения лучших предложений валют и возвращает путь и имя файла доски валют
-func GetKursValuta(todir string) (string, string) {
-	resstr := ""
-	//	if todir != "" {
-	//		if _, err := os.Stat(todir); os.IsNotExist(err) {
-	//			os.Mkdir(todir, 0666)
-	//		}
-	//	}
-	//	resfile := todir + string(os.PathSeparator) + "board-money.html"
-	resfile := todir + "board-money.html"
-	str, res := parsebank.RunGoBoardValutaHtml()
-	pick.Savestrtofile(resfile, str) // не сохраняет в папке
-
-	usdkurspokupka := res[0]
-	usdkursprodaja := res[1]
-	eurkurspokupka := res[2]
-	eurkursprodaja := res[3]
-
-	resstr += " Лучшая покупка USD: " + usdkurspokupka.Namebank + " - " + parsebank.FloatToString(usdkurspokupka.Pokupka) + " \n Лучшая продажа USD: " + usdkursprodaja.Namebank + " - " + parsebank.FloatToString(usdkursprodaja.Prodaja) + "\n Лучшая покупка EUR: " + eurkurspokupka.Namebank + " - " + parsebank.FloatToString(eurkurspokupka.Pokupka) + "\n Лучшая продажа EUR: " + eurkursprodaja.Namebank + " - " + parsebank.FloatToString(eurkursprodaja.Prodaja)
-
-	return resstr, resfile
 }
 
 func main() {
@@ -113,7 +86,7 @@ func main() {
 			msg.ReplyToMessageID = update.Message.MessageID
 			bot.Send(msg)
 		case "kurs":
-			reply, replyfile = GetKursValuta(update.Message.From.UserName + "-")
+			//			reply, replyfile = GetKursValuta(update.Message.From.UserName + "-")
 			reply = fmt.Sprintf(reply)
 			msg = tgbotapi.NewMessage(update.Message.Chat.ID, reply)
 			msg.ReplyToMessageID = update.Message.MessageID
@@ -121,7 +94,7 @@ func main() {
 			msgf = tgbotapi.NewDocumentUpload(update.Message.Chat.ID, replyfile)
 			bot.Send(msgf)
 		case "курс":
-			reply, replyfile = GetKursValuta(update.Message.From.UserName + "-")
+			//			reply, replyfile = GetKursValuta(update.Message.From.UserName + "-")
 			reply = fmt.Sprintf(reply)
 			msg = tgbotapi.NewMessage(update.Message.Chat.ID, reply)
 			msg.ReplyToMessageID = update.Message.MessageID
@@ -136,6 +109,13 @@ func main() {
 			msgi = tgbotapi.NewPhotoUpload(update.Message.Chat.ID, "image.jpg")
 			msgi.Caption = "TestImg"
 			bot.Send(msgi)
+		case "!quit!":
+			// сделать
+			tgbotapi.NewMessage(update.Message.Chat.ID, reply)
+			msg.ReplyToMessageID = update.Message.MessageID
+			msg.Text = "Bye-Bye!!!"
+			bot.Send(msg)
+			return
 		default:
 			reply = update.Message.Text
 			msg = tgbotapi.NewMessage(update.Message.Chat.ID, reply)
@@ -146,3 +126,28 @@ func main() {
 	}
 	fmt.Println("Stop kaefik bot...")
 }
+
+//------------------
+// возвращает текст сообщения лучших предложений валют и возвращает путь и имя файла доски валют
+//func GetKursValuta(todir string) (string, string) {
+//	resstr := ""
+//	//	if todir != "" {
+//	//		if _, err := os.Stat(todir); os.IsNotExist(err) {
+//	//			os.Mkdir(todir, 0666)
+//	//		}
+//	//	}
+//	//	resfile := todir + string(os.PathSeparator) + "board-money.html"
+//	resfile := todir + "board-money.html"
+//	str, res := parsebank.RunGoBoardValutaHtml()
+
+//	pick.Savestrtofile(resfile, str) // не сохраняет в папке
+
+//	usdkurspokupka := res[0]
+//	usdkursprodaja := res[1]
+//	eurkurspokupka := res[2]
+//	eurkursprodaja := res[3]
+
+//	resstr += " Лучшая покупка USD: " + usdkurspokupka.Namebank + " - " + parsebank.FloatToString(usdkurspokupka.Pokupka) + " \n Лучшая продажа USD: " + usdkursprodaja.Namebank + " - " + parsebank.FloatToString(usdkursprodaja.Prodaja) + "\n Лучшая покупка EUR: " + eurkurspokupka.Namebank + " - " + parsebank.FloatToString(eurkurspokupka.Pokupka) + "\n Лучшая продажа EUR: " + eurkursprodaja.Namebank + " - " + parsebank.FloatToString(eurkursprodaja.Prodaja)
+
+//	return resstr, resfile
+//}
