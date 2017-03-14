@@ -6,7 +6,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/Syfaro/telegram-bot-api"
+	"github.com/Syfaro/telegram-bot-api" 
 )
 
 var (
